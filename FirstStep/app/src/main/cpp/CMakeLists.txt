@@ -29,6 +29,14 @@ add_library( # Sets the name of the library.
 # you want to add. CMake verifies that the library exists before
 # completing its build.
 
+target_include_directories(firststep PUBLIC
+        C:/Users/andre/AndroidStudioProjects/FirstStep/libs/spdlog/spdlog/include
+        )
+
+add_library(spdlog STATIC IMPORTED)
+set_target_properties(spdlog PROPERTIES IMPORTED_LOCATION
+        C:/Users/andre/AndroidStudioProjects/FirstStep/libs/spdlog/build/${ANDROID_ABI}/libspdlog.a)
+
 find_library( # Sets the name of the path variable.
         log-lib
 
@@ -42,6 +50,7 @@ find_library( # Sets the name of the path variable.
 
 target_link_libraries( # Specifies the target library.
         firststep
+        spdlog
 
         # Links the target library to the log library
         # included in the NDK.
