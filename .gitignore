@@ -1,0 +1,4 @@
+libs/spdlog/spdlog
+libs/spdlog/build/x86
+libs/mbedtls/mbedtls
+libs/mbedtls/build/x86
