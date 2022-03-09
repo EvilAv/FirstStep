@@ -30,12 +30,12 @@ add_library( # Sets the name of the library.
 # completing its build.
 
 target_include_directories(firststep PUBLIC
-        C:/Users/andre/AndroidStudioProjects/FirstStep/libs/spdlog/spdlog/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../libs/spdlog/spdlog/include
         )
 
 add_library(spdlog STATIC IMPORTED)
 set_target_properties(spdlog PROPERTIES IMPORTED_LOCATION
-        C:/Users/andre/AndroidStudioProjects/FirstStep/libs/spdlog/build/${ANDROID_ABI}/libspdlog.a)
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../libs/spdlog/build/${ANDROID_ABI}/libspdlog.a)
 
 find_library( # Sets the name of the path variable.
         log-lib
