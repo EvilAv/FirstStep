@@ -31,11 +31,16 @@ add_library( # Sets the name of the library.
 
 target_include_directories(firststep PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../libs/spdlog/spdlog/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../libs/mbedtls/mbedtls/include
         )
 
 add_library(spdlog STATIC IMPORTED)
 set_target_properties(spdlog PROPERTIES IMPORTED_LOCATION
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../libs/spdlog/build/${ANDROID_ABI}/libspdlog.a)
+
+add_library(mbedcrypto SHARED IMPORTED)
+set_target_properties(mbedcrypto PROPERTIES IMPORTED_LOCATION
+        ${CMAKE_CURRENT_SOURCE_DIR}/../nativeLibs/${ANDROID_ABI}/libmbedcrypto.so)
 
 find_library( # Sets the name of the path variable.
         log-lib
@@ -51,6 +56,7 @@ find_library( # Sets the name of the path variable.
 target_link_libraries( # Specifies the target library.
         firststep
         spdlog
+        mbedcrypto
 
         # Links the target library to the log library
         # included in the NDK.
