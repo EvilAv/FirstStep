@@ -18,9 +18,11 @@ import com.example.firststep.databinding.ActivityMainBinding;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements  TransactionEvents{
 
     ActivityResultLauncher activityResultLauncher;
+    private String pin;
+    int money = 10;
 
     // Used to load the 'firststep' library on application startup.
     static {
@@ -39,35 +41,71 @@ public class MainActivity extends AppCompatActivity {
 
         int res = initRng();
 
+        TextView sum = findViewById(R.id.total_sum);
+        sum.setText(Integer.toString(money)+" RUB");
+
+
         activityResultLauncher  = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(), // instead of anonymous class
                 (ActivityResult result) -> {  // rewrite method 'onActivityResult' with lambda
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent data = result.getData();
                         // обработка результата
-                        String pin = data.getStringExtra("pin");
-                        Toast.makeText(MainActivity.this, pin,
-                                Toast.LENGTH_SHORT).show();  // lasts 2 seconds (so loooooong)
-                        byte[] rnd = randomBytes(10);
-                        TextView test = findViewById(R.id.rnd_elem);
-                        test.setText("Some random numbers: "+Byte.toString( rnd[0])+" , "+String.format("%d", rnd[1]));
+                        //String pin = data.getStringExtra("pin");
+//                        Toast.makeText(MainActivity.this, pin,
+//                                Toast.LENGTH_SHORT).show();  // lasts 2 seconds (so loooooong)
+                        pin = data.getStringExtra("pin");
+                        synchronized (MainActivity.this) {
+                            MainActivity.this.notifyAll();
+                        }
                     }
                 });
 
     }
 
+    @Override
+    public String enterPin(int ptc, String amount) {
+        pin = new String();
+        Intent it = new Intent(MainActivity.this, PinpadActivity.class);
+        it.putExtra("ptc", ptc);
+        it.putExtra("amount", amount);
+        synchronized (MainActivity.this) {
+            activityResultLauncher.launch(it);
+            try {
+                MainActivity.this.wait();
+            } catch (Exception ex) {
+                //todo: log error
+            }
+        }
+        return pin;
+    }
+
     public void onButtonClick(View v)
     {
-        //        byte[] key =
-//                stringToHex("0123456789ABCDEF0123456789ABCDE0");
-//        byte[] enc = encrypt(key,
-//                stringToHex("000000000000000102"));
-//        byte[] dec = decrypt(key, enc);
-//        String s = new String(Hex.encodeHex(dec)).toUpperCase();
-//        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
+        byte[] rnd = randomBytes(10);
+        TextView test = findViewById(R.id.rnd_elem);
 
-        Intent it = new Intent(this, PinpadActivity.class);
-        activityResultLauncher.launch(it);
+        if (money <= 0)
+            Toast.makeText(MainActivity.this, "You have no money :(", Toast.LENGTH_SHORT).show();
+
+        if (money >0){
+            new Thread(()-> {
+                try {
+                    byte[] trd = stringToHex("9F0206000000000100");
+                    boolean ok = transaction(trd);
+                    runOnUiThread(()-> {
+                        test.setText( ok ? "Some random numbers: "+Byte.toString( rnd[0])+" , "+String.format("%d", rnd[1]) : "");
+                        Toast.makeText(MainActivity.this, ok ? "ok" : "failed", Toast.LENGTH_SHORT).show();
+                        if (ok)
+                            money --;
+                        TextView sum = findViewById(R.id.total_sum);
+                        sum.setText(Integer.toString(money)+" RUB");
+                    });
+                } catch (Exception ex) {
+                    // todo: log error
+                }
+            }).start();
+        }
     }
 
     public static byte[] stringToHex(String s)
@@ -92,4 +130,5 @@ public class MainActivity extends AppCompatActivity {
     public static native byte[] randomBytes(int no);
     public static native byte[] encrypt(byte[] key, byte[] data);
     public static native byte[] decrypt(byte[] key, byte[] data);
+    public native boolean transaction(byte[] trd);
 }
