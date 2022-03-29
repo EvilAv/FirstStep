@@ -40,8 +40,8 @@ public class MainActivity extends AppCompatActivity {
         int res = initRng();
 
         activityResultLauncher  = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
+                new ActivityResultContracts.StartActivityForResult(), // instead of anonymous class
+                (ActivityResult result) -> {  // rewrite method 'onActivityResult' with lambda
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent data = result.getData();
                         // обработка результата
@@ -58,6 +58,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void onButtonClick(View v)
     {
+        //        byte[] key =
+//                stringToHex("0123456789ABCDEF0123456789ABCDE0");
+//        byte[] enc = encrypt(key,
+//                stringToHex("000000000000000102"));
+//        byte[] dec = decrypt(key, enc);
+//        String s = new String(Hex.encodeHex(dec)).toUpperCase();
+//        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
 
         Intent it = new Intent(this, PinpadActivity.class);
         activityResultLauncher.launch(it);
