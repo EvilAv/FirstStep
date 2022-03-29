@@ -18,7 +18,7 @@ import com.example.firststep.databinding.ActivityMainBinding;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements TransactionEvents {
 
     ActivityResultLauncher activityResultLauncher;
 
@@ -31,6 +31,23 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
 
     @Override
+    public String enterPin(int ptc, String amount) {
+        String pin = new String();
+        Intent it = new Intent(MainActivity.this, PinpadActivity.class);
+        it.putExtra("ptc", ptc);
+        it.putExtra("amount", amount);
+        synchronized (MainActivity.this) {
+            activityResultLauncher.launch(it);
+            try {
+                MainActivity.this.wait();
+            } catch (Exception ex) {
+                //todo: log error
+            }
+        }
+        return pin;
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -40,24 +57,35 @@ public class MainActivity extends AppCompatActivity {
         int res = initRng();
 
         activityResultLauncher  = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
+                new ActivityResultContracts.StartActivityForResult(), // instead of anonymous class
+                (ActivityResult result) -> {  // rewrite method 'onActivityResult' with lambda
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent data = result.getData();
                         // обработка результата
                         String pin = data.getStringExtra("pin");
-                        Toast.makeText(MainActivity.this, pin,
-                                Toast.LENGTH_SHORT).show();  // lasts 2 seconds (so loooooong)
-                        byte[] rnd = randomBytes(10);
-                        TextView test = findViewById(R.id.rnd_elem);
-                        test.setText("Some random numbers: "+Byte.toString( rnd[0])+" , "+String.format("%d", rnd[1]));
+//                        Toast.makeText(MainActivity.this, pin,
+//                                Toast.LENGTH_SHORT).show();  // lasts 2 seconds (so loooooong)
+//                        byte[] rnd = randomBytes(10);
+//                        TextView test = findViewById(R.id.rnd_elem);
+//                        test.setText("Some random numbers: "+Byte.toString( rnd[0])+" , "+String.format("%d", rnd[1]));
+                        synchronized (MainActivity.this) {
+                            MainActivity.this.notifyAll();
+                        }
                     }
                 });
+
 
     }
 
     public void onButtonClick(View v)
     {
+//        byte[] key =
+//                stringToHex("0123456789ABCDEF0123456789ABCDE0");
+//        byte[] enc = encrypt(key,
+//                stringToHex("000000000000000102"));
+//        byte[] dec = decrypt(key, enc);
+//        String s = new String(Hex.encodeHex(dec)).toUpperCase();
+//        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
 
         Intent it = new Intent(this, PinpadActivity.class);
         activityResultLauncher.launch(it);
