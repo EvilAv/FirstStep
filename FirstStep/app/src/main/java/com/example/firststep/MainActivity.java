@@ -50,10 +50,7 @@ public class MainActivity extends AppCompatActivity implements  TransactionEvent
                 (ActivityResult result) -> {  // rewrite method 'onActivityResult' with lambda
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent data = result.getData();
-                        // обработка результата
-                        //String pin = data.getStringExtra("pin");
-//                        Toast.makeText(MainActivity.this, pin,
-//                                Toast.LENGTH_SHORT).show();  // lasts 2 seconds (so loooooong)
+
                         pin = data.getStringExtra("pin");
                         synchronized (MainActivity.this) {
                             MainActivity.this.notifyAll();
@@ -80,32 +77,30 @@ public class MainActivity extends AppCompatActivity implements  TransactionEvent
         return pin;
     }
 
+    @Override
+    public void transactionResult(boolean result) {
+        TextView sum = findViewById(R.id.total_sum);
+        TextView test = findViewById(R.id.rnd_elem);
+        byte[] rnd = randomBytes(10);
+        runOnUiThread(()-> {
+            test.setText( result ? "Some random numbers: "+Byte.toString( rnd[0])+" , "+String.format("%d", rnd[1]) : "");
+            Toast.makeText(MainActivity.this, result ? "ok" : "failed", Toast.LENGTH_SHORT).show();
+
+            if (result)
+                money--;
+            sum.setText(money + " RUB");
+
+        });
+    }
+
     public void onButtonClick(View v)
     {
-        byte[] rnd = randomBytes(10);
-        TextView test = findViewById(R.id.rnd_elem);
+        byte[] trd = stringToHex("9F0206000000000100");
 
         if (money <= 0)
             Toast.makeText(MainActivity.this, "You have no money :(", Toast.LENGTH_SHORT).show();
-
-        if (money >0){
-            new Thread(()-> {
-                try {
-                    byte[] trd = stringToHex("9F0206000000000100");
-                    boolean ok = transaction(trd);
-                    runOnUiThread(()-> {
-                        test.setText( ok ? "Some random numbers: "+Byte.toString( rnd[0])+" , "+String.format("%d", rnd[1]) : "");
-                        Toast.makeText(MainActivity.this, ok ? "ok" : "failed", Toast.LENGTH_SHORT).show();
-                        if (ok)
-                            money --;
-                        TextView sum = findViewById(R.id.total_sum);
-                        sum.setText(Integer.toString(money)+" RUB");
-                    });
-                } catch (Exception ex) {
-                    // todo: log error
-                }
-            }).start();
-        }
+        else
+            transaction(trd);
     }
 
     public static byte[] stringToHex(String s)
