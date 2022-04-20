@@ -155,7 +155,7 @@ extern "C" JNIEXPORT jboolean JNICALL
     Java_com_example_firststep_MainActivity_transaction(JNIEnv *xenv, jobject xthiz, jbyteArray xtrd){
     jobject thiz = xenv->NewGlobalRef(xthiz);
     jbyteArray trd = (jbyteArray)xenv->NewGlobalRef(xtrd);
-    std::thread t([thiz, trd] {
+    std::thread t([thiz, trd] { // start stream
         bool detach = false;
         JNIEnv *env = getEnv(detach);
         jclass cls = env->GetObjectClass(thiz);
@@ -195,6 +195,6 @@ extern "C" JNIEXPORT jboolean JNICALL
         releaseEnv(detach, env);
         return true;
     });
-    t.detach();
+    t.detach(); // send stream to free flight (in phone mode)
     return true;
 }

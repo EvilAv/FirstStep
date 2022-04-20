@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,14 +18,19 @@ import com.example.firststep.databinding.ActivityMainBinding;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.IOUtils;
+
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity implements  TransactionEvents{
 
     ActivityResultLauncher activityResultLauncher;
     private String pin;
-    int money = 10;
 
-    // Used to load the 'firststep' library on application startup.
     static {
         System.loadLibrary("firststep");
         System.loadLibrary("mbedcrypto");
@@ -40,9 +46,6 @@ public class MainActivity extends AppCompatActivity implements  TransactionEvent
         setContentView(binding.getRoot());
 
         int res = initRng();
-
-        TextView sum = findViewById(R.id.total_sum);
-        sum.setText(Integer.toString(money)+" RUB");
 
 
         activityResultLauncher  = registerForActivityResult(
@@ -79,28 +82,16 @@ public class MainActivity extends AppCompatActivity implements  TransactionEvent
 
     @Override
     public void transactionResult(boolean result) {
-        TextView sum = findViewById(R.id.total_sum);
-        TextView test = findViewById(R.id.rnd_elem);
-        byte[] rnd = randomBytes(10);
         runOnUiThread(()-> {
-            test.setText( result ? "Some random numbers: "+Byte.toString( rnd[0])+" , "+String.format("%d", rnd[1]) : "");
             Toast.makeText(MainActivity.this, result ? "ok" : "failed", Toast.LENGTH_SHORT).show();
-
-            if (result)
-                money--;
-            sum.setText(money + " RUB");
-
         });
     }
 
     public void onButtonClick(View v)
     {
-        byte[] trd = stringToHex("9F0206000000000100");
-
-        if (money <= 0)
-            Toast.makeText(MainActivity.this, "You have no money :(", Toast.LENGTH_SHORT).show();
-        else
-            transaction(trd);
+//        byte[] trd = stringToHex("9F0206000000000100");
+//         transaction(trd);
+        testHttpClient();
     }
 
     public static byte[] stringToHex(String s)
@@ -116,6 +107,45 @@ public class MainActivity extends AppCompatActivity implements  TransactionEvent
         }
         return hex;
     }
+
+    protected void testHttpClient()
+    {
+        new Thread(() -> {
+            try {
+                HttpURLConnection uc = (HttpURLConnection)
+                        (new URL("http://10.0.2.2:8081/api/v1/title").openConnection());
+                int a = uc.getResponseCode();
+                InputStream inputStream = uc.getInputStream();
+                String html = IOUtils.toString(inputStream);
+                String title = getPageTitle(html);
+                runOnUiThread(() ->
+                {
+                    Toast.makeText(this, title + " "+ a, Toast.LENGTH_LONG).show();
+                });
+            } catch (Exception ex) {
+                Log.e("fapptag", "Http client fails", ex);
+            }
+        }).start();
+    }
+
+    private String getPageTitle(String html) {
+        Pattern pattern = Pattern.compile("<title>(.+?)</title>", Pattern.DOTALL); // go to dotall mode
+
+        //Pattern - a regular expression, specified as a string, must first be compiled into an instance of this class.
+        //In dotall mode, the expression . matches any character, including a line terminator.
+        //By default this expression does not match line terminators
+
+        Matcher matcher = pattern.matcher(html); // object that can match arbitrary character sequences
+        String p;
+        if (matcher.find())
+            p = matcher.group(1);
+        else
+            p = "Not found";
+        return p;
+
+
+    }
+
     /**
      * A native method that is implemented by the 'firststep' native library,
      * which is packaged with this application.
