@@ -22,7 +22,7 @@ public class Country {
     @Column(name = "name", unique = true, nullable = false)
     public String name;
 
-    //@JsonIgnore
+    @JsonIgnore
     @OneToMany(mappedBy = "country")
     public List<Artist> artists = new ArrayList<>();
 

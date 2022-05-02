@@ -30,7 +30,7 @@ public class ArtistController {
     }
 
     @PostMapping("/artists")
-    public ResponseEntity<Object> createartist(@RequestBody Artist artist)
+    public ResponseEntity<Object> createArtist(@RequestBody Artist artist)
             throws Exception {
         try {
             Optional<Country>
@@ -55,7 +55,7 @@ public class ArtistController {
         }
     }
     @PutMapping("/artists/{id}")
-    public ResponseEntity<Artist> updateartist(@PathVariable(value = "id") Long artistId,  @RequestBody Artist artistDetails) {
+    public ResponseEntity<Artist> updateArtist(@PathVariable(value = "id") Long artistId,  @RequestBody Artist artistDetails) {
         Artist artist = null;
         Optional<Artist>
                 cc = artistRepository.findById(artistId);
@@ -70,7 +70,7 @@ public class ArtistController {
         }
     }
     @DeleteMapping("/artists/{id}")
-    public ResponseEntity<Object> deleteartist(@PathVariable(value = "id") Long artistId){
+    public ResponseEntity<Object> deleteArtist(@PathVariable(value = "id") Long artistId){
         Optional<Artist>
                 artist = artistRepository.findById(artistId);
         Map<String, Boolean>
