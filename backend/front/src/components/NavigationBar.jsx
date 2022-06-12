@@ -41,6 +41,7 @@ const NavigationBar = (props) => {
                     <Nav.Link as={Link} to="/home">Home</Nav.Link>
                     <Nav.Link onClick={goHome}>Another Home</Nav.Link>
                     <Nav.Link onClick={goHome}>Yet Another Home</Nav.Link>
+                    <Nav.Link onClick={() => {navigate("account")}}>Account</Nav.Link>
                 </Nav>
                 <Navbar.Text>{uname}</Navbar.Text>
                 { props.user &&
