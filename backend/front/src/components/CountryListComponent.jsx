@@ -90,13 +90,13 @@ const CountryListComponent = props => {
                 <h3>Страны</h3>
                 <div className="btn-toolbar">
                     <div className="btn-group ms-auto">
-                        <button className="btn btn-outline-secondary"
+                        <button className="btn btn-outline-success"
                                 onClick={addCountryClicked}>
                             <FontAwesomeIcon icon={faPlus} />{' '}Добавить
                         </button>
                     </div>
                     <div className="btn-group ms-2">
-                        <button className="btn btn-outline-secondary"
+                        <button className="btn btn-outline-danger"
                                 onClick={deleteCountriesClicked}>
                             <FontAwesomeIcon icon={faTrash} />{' '}Удалить
                         </button>
